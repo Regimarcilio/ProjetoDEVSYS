@@ -1,0 +1,27 @@
+{
+  "name": "projetodevsys",
+  "version": "1.0.0",
+  "description": "Sistema web de gestão comercial desenvolvido como projeto acadêmico e técnico.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Regimarcilio/ProjetoDEVSYS.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Regimarcilio/ProjetoDEVSYS/issues"
+  },
+  "homepage": "https://github.com/Regimarcilio/ProjetoDEVSYS#readme",
+  "devDependencies": {
+    "dotenv": "^17.4.2",
+    "prisma": "^7.10.0"
+  }
+}
