@@ -22,5 +22,29 @@ services:
       timeout: 5s
       retries: 5
 
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+
+    container_name: sgv-backend
+    restart: unless-stopped
+
+    working_dir: /app
+
+    environment:
+      DATABASE_URL: "mysql://sgv_user:sgv_password@mysql:3306/sgv"
+
+    ports:
+      - "3001:3001"
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
 volumes:
   mysql_data:
