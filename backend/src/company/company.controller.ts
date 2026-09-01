@@ -6,8 +6,10 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
+
 import { CreateCompanyDto } from './dto/create-company.dto.js';
 import { UpdateCompanyDto } from './dto/update-company.dto.js';
+import { UpdateCompanyStatusDto } from './dto/update-company-status.dto.js';
 import { CompanyService } from './company.service.js';
 
 @Controller('companies')
@@ -35,5 +37,13 @@ export class CompanyController {
     @Body() data: UpdateCompanyDto,
   ) {
     return this.companyService.update(id, data);
+  }
+
+  @Patch(':id/status')
+  updateStatus(
+    @Param('id') id: string,
+    @Body() data: UpdateCompanyStatusDto,
+  ) {
+    return this.companyService.updateStatus(id, data.status);
   }
 }
