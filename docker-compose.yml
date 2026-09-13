@@ -33,9 +33,9 @@ services:
     working_dir: /app
 
     environment:
-      DATABASE_URL: "mysql://sgv_user:sgv_password@mysql:3306/sgv"
-      DATABASE_HOST: "mysql"
-      DATABASE_PORT: "3306"
+      DATABASE_URL: "mysql://sgv_user:sgv_password@172.22.0.1:3307/sgv"
+      DATABASE_HOST: "172.22.0.1"
+      DATABASE_PORT: "3307"
       DATABASE_USER: "sgv_user"
       DATABASE_PASSWORD: "sgv_password"
       DATABASE_NAME: "sgv"
