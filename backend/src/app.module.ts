@@ -2,8 +2,9 @@ import { Module } from '@nestjs/common';
 
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
-import { CompanyModule } from './company/company.module.js';
+import { CategoryModule } from './category/category.module.js';
 import { ClientModule } from './client/client.module.js';
+import { CompanyModule } from './company/company.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 
 @Module({
@@ -11,6 +12,7 @@ import { PrismaModule } from './prisma/prisma.module.js';
     PrismaModule,
     CompanyModule,
     ClientModule,
+    CategoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
