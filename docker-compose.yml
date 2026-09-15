@@ -39,6 +39,7 @@ services:
       DATABASE_USER: "sgv_user"
       DATABASE_PASSWORD: "sgv_password"
       DATABASE_NAME: "sgv"
+      JWT_SECRET: "SGV_JWT_SECRET_2026_TROCAR_EM_PRODUCAO"
 
     ports:
       - "3001:3001"
