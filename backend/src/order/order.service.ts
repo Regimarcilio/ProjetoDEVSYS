@@ -9,13 +9,27 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateOrderDto } from './dto/create-order.dto.js';
 import { UpdateOrderDto } from './dto/update-order.dto.js';
 
+interface AuthenticatedUser {
+  id: string;
+  companyId: string;
+  name: string;
+  email: string;
+  status: string;
+}
+
 @Injectable()
 export class OrderService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(dto: CreateOrderDto) {
+  async create(
+    dto: CreateOrderDto,
+    authenticatedUser: AuthenticatedUser,
+  ) {
+    const companyId = authenticatedUser.companyId;
+    const userId = authenticatedUser.id;
+
     const company = await this.prisma.company.findUnique({
-      where: { id: dto.companyId },
+      where: { id: companyId },
       select: {
         id: true,
         status: true,
@@ -30,31 +44,10 @@ export class OrderService {
       throw new BadRequestException('A empresa está inativa.');
     }
 
-    const client = await this.prisma.client.findFirst({
-      where: {
-        id: dto.clientId,
-        companyId: dto.companyId,
-      },
-      select: {
-        id: true,
-        status: true,
-      },
-    });
-
-    if (!client) {
-      throw new NotFoundException(
-        'Cliente não encontrado para esta empresa.',
-      );
-    }
-
-    if (client.status !== 'ACTIVE') {
-      throw new BadRequestException('O cliente está inativo.');
-    }
-
     const user = await this.prisma.user.findFirst({
       where: {
-        id: dto.userId,
-        companyId: dto.companyId,
+        id: userId,
+        companyId,
       },
       select: {
         id: true,
@@ -72,6 +65,27 @@ export class OrderService {
       throw new BadRequestException('O usuário está inativo.');
     }
 
+    const client = await this.prisma.client.findFirst({
+      where: {
+        id: dto.clientId,
+        companyId,
+      },
+      select: {
+        id: true,
+        status: true,
+      },
+    });
+
+    if (!client) {
+      throw new NotFoundException(
+        'Cliente não encontrado para esta empresa.',
+      );
+    }
+
+    if (client.status !== 'ACTIVE') {
+      throw new BadRequestException('O cliente está inativo.');
+    }
+
     const productIds = dto.items.map((item) => item.productId);
 
     if (new Set(productIds).size !== productIds.length) {
@@ -85,7 +99,7 @@ export class OrderService {
         id: {
           in: productIds,
         },
-        companyId: dto.companyId,
+        companyId,
       },
       select: {
         id: true,
@@ -153,7 +167,7 @@ export class OrderService {
 
     const lastOrder = await this.prisma.order.findFirst({
       where: {
-        companyId: dto.companyId,
+        companyId,
       },
       orderBy: {
         number: 'desc',
@@ -168,9 +182,9 @@ export class OrderService {
     try {
       return await this.prisma.order.create({
         data: {
-          companyId: dto.companyId,
+          companyId,
           clientId: dto.clientId,
-          userId: dto.userId,
+          userId,
           number,
           status: OrderStatus.DRAFT,
           subtotal,
@@ -197,7 +211,7 @@ export class OrderService {
   }
 
   async findAll(companyId: string) {
-    const orders = await this.prisma.order.findMany({
+    return this.prisma.order.findMany({
       where: {
         companyId,
       },
@@ -206,13 +220,14 @@ export class OrderService {
       },
       include: this.getOrderInclude(),
     });
-
-    return orders;
   }
 
-  async findOne(id: string) {
-    const order = await this.prisma.order.findUnique({
-      where: { id },
+  async findOne(id: string, companyId: string) {
+    const order = await this.prisma.order.findFirst({
+      where: {
+        id,
+        companyId,
+      },
       include: this.getOrderInclude(),
     });
 
@@ -223,9 +238,16 @@ export class OrderService {
     return order;
   }
 
-  async update(id: string, dto: UpdateOrderDto) {
-    const order = await this.prisma.order.findUnique({
-      where: { id },
+  async update(
+    id: string,
+    dto: UpdateOrderDto,
+    companyId: string,
+  ) {
+    const order = await this.prisma.order.findFirst({
+      where: {
+        id,
+        companyId,
+      },
       select: {
         id: true,
         status: true,
@@ -244,7 +266,9 @@ export class OrderService {
       );
     }
 
-    const discount = new Prisma.Decimal(dto.discount ?? order.discount ?? 0);
+    const discount = new Prisma.Decimal(
+      dto.discount ?? order.discount ?? 0,
+    );
 
     if (discount.greaterThan(order.subtotal)) {
       throw new BadRequestException(
@@ -255,7 +279,9 @@ export class OrderService {
     const total = new Prisma.Decimal(order.subtotal).sub(discount);
 
     return this.prisma.order.update({
-      where: { id },
+      where: {
+        id: order.id,
+      },
       data: {
         discount,
         total,
@@ -264,9 +290,16 @@ export class OrderService {
     });
   }
 
-  async updateStatus(id: string, status: OrderStatus) {
-    const order = await this.prisma.order.findUnique({
-      where: { id },
+  async updateStatus(
+    id: string,
+    status: OrderStatus,
+    companyId: string,
+  ) {
+    const order = await this.prisma.order.findFirst({
+      where: {
+        id,
+        companyId,
+      },
       select: {
         id: true,
         status: true,
@@ -280,7 +313,9 @@ export class OrderService {
     this.validateStatusTransition(order.status, status);
 
     return this.prisma.order.update({
-      where: { id },
+      where: {
+        id: order.id,
+      },
       data: {
         status,
       },

@@ -23,15 +23,7 @@ class CreateOrderItemDto {
 export class CreateOrderDto {
   @IsUUID()
   @IsNotEmpty()
-  companyId!: string;
-
-  @IsUUID()
-  @IsNotEmpty()
   clientId!: string;
-
-  @IsUUID()
-  @IsNotEmpty()
-  userId!: string;
 
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
